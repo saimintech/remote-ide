@@ -4,13 +4,8 @@
 // Configuration
 //////////////////////////////////////////////////////////////////////////////80
 // Copyright (c) Atheos & Liam Siira (Atheos.io), distributed as-is and without
-// warranty under the MIT License. See [root]/docs/LICENSE.md for more.
-// This information must remain intact.
-//////////////////////////////////////////////////////////////////////////////80
-// Authors: Codiad Team, @Fluidbyte, Atheos Team, @hlsiira
-//////////////////////////////////////////////////////////////////////////////80
+// warranty under the MIT License. See [root]/docs/LICENSE.md for more
 
-// PATH TO ATHEOS
 define("BASE_PATH", __DIR__);
 
 // BASE URL TO ATHEOS (without trailing slash)
@@ -57,9 +52,6 @@ define("PLUGINS", BASE_PATH . "/plugins");
 define("DATA", BASE_PATH . "/data");
 define("WORKSPACE", BASE_PATH . "/workspace");
 
-//define("UPDATEURL", "https://www.atheos.io/update");
-//define("MARKETURL", "https://www.atheos.io/market/json");
-//define("GITHUBAPI", "https://api.github.com/repos/Atheos/Atheos/releases/latest");
 
 define("UPDATEURL", "");
 define("MARKETURL", "");
