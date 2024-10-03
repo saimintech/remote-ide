@@ -1,0 +1,16 @@
+{
+    "enabled": false,
+    "uuid": "621e8ef654034",
+    "version": "v4.3.0",
+    "first_heard": "2022\/03\/01",
+    "last_heard": "2024\/10\/03",
+    "php_version": "7.3.33-1+ubuntu18.04.1+deb.sury.org+1",
+    "server_os": "Apache\/2.4.29 (Ubuntu)",
+    "client_os": [
+        "Chrome",
+        "Firefox"
+    ],
+    "timezone": "Asia\/Tashkent",
+    "language": "en",
+    "plugins": []
+}

@@ -1,0 +1,188 @@
+---
+- hosts: servers
+  become: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    - name: Install prerequisites
+      apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+      tags: [ system ]
+
+    - name: Install LAMP Packages
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2', 'mysql-server', 'python3-mysqldb', 'python3-pymysql', 'php', 'php-mysql', 'libapache2-mod-php' ]
+      tags: [ system ]
+
+    - name: Install PHP Extensions
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: "{{ php_modules }}"
+      tags: [ system ]
+
+  # Apache Configuration
+    - name: Create document root
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "www-data"
+        group: "www-data"
+        mode: '0755'
+      tags: [ apache ]
+
+    - name: Set up Apache VirtualHost
+      template:
+        src: "files/apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+      notify: Reload Apache
+      tags: [ apache ]
+
+    - name: Enable rewrite module
+      shell: /usr/sbin/a2enmod rewrite
+      notify: Reload Apache
+      tags: [ apache ]
+
+    - name: Enable new site
+      shell: /usr/sbin/a2ensite {{ http_conf }}
+      notify: Reload Apache
+      tags: [ apache ]
+
+    - name: Disable default Apache site
+      shell: /usr/sbin/a2dissite 000-default.conf
+      notify: Restart Apache
+      tags: [ apache ]
+
+  # MySQL Configuration
+    - name: Set the root password
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      tags: [ mysql, mysql-root ]
+
+    - name: Remove all anonymous user accounts
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+
+    - name: Remove the MySQL test database
+      mysql_db:
+        name: test
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+
+    - name: Creates database for Laravel
+      mysql_db:
+        name: "{{ mysql_db }}"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+
+    - name: Create MySQL user for Laravel
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        priv: "{{ mysql_db }}.*:ALL"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+    
+    - name: Make sure the remote app root exists and has the right permissions
+      file:
+        path: "{{ app_location }}"
+        state: directory
+        mode: '0755'
+    
+    - name: Validate Composer checksum
+      get_url:
+        checksum: "{{ checksum }}"
+        dest: /usr/src/
+        url: https://getcomposer.org/installer
+      become: yes
+
+    - name: Download and install Composer
+      shell: curl -sS https://getcomposer.org/installer | php
+      args:
+        chdir: /usr/src/
+        creates: /usr/local/bin/composer
+        warn: false
+      become: yes
+
+    - name: Add Composer to global path
+      copy: 
+        dest: /usr/local/bin/composer
+        group: root
+        mode: '0755'
+        owner: root
+        src: /usr/src/composer.phar
+        remote_src: yes
+      become: yes  
+      
+    - name: Rsync application files to the remote server
+      become: true
+      synchronize:
+        src: "{{app_location}}/{{ app_root_dir }}"
+        dest: "{{ remote_www_root }}"
+        rsync_opts:
+          - "--no-motd"
+          - "--exclude=.git,vendor,tests,storage/logs/*,storage/framework/sessions/*,storage/framework/cache/*"
+
+    - name: Set up additional directory permissions for www-data user on storage folder
+      become: true
+      acl:
+        path: "{{ remote_www_root }}/{{ app_root_dir }}/storage/"
+        entry: group:www-data:rwX
+        recursive: yes
+        state: present
+
+    - name: Set up additional directory permissions for www-data user on bootstrap/cache folder
+      become: true
+      acl:
+        path: "{{ remote_www_root }}/{{ app_root_dir }}/bootstrap/cache/"
+        entry: group:www-data:rwX
+        recursive: yes
+        state: present
+
+    - name: Set up .env file
+      template:
+        src: files/laravel-env.j2
+        dest: "{{ remote_www_root }}/{{ app_root_dir }}/.env"
+
+    - name: Install Dependencies with Composer
+      become: false
+      composer:
+        command: update
+        working_dir: "{{ remote_www_root }}/{{ app_root_dir }}"
+      environment:
+        COMPOSER_NO_INTERACTION: "1"
+      tags: [ 'composer:install' ]
+
+    - name: Generate app key
+      command: "/usr/bin/php {{ remote_www_root }}/{{ app_root_dir }}/artisan key:generate"
+      tags: [ 'laravel', 'artisan:key' ]
+
+    - name: Set up app storage link
+      command: "/usr/bin/php {{ remote_www_root }}/{{ app_root_dir }}/artisan storage:link"
+      tags: [ 'laravel', 'artisan:storage' ]
+
+    - name: Run Migrations + Seeders
+      command: "/usr/bin/php {{ remote_www_root }}/{{ app_root_dir }}/artisan migrate --seed"
+      tags: [ 'laravel', 'artisan:migrate' ]
+
+  handlers:
+    - name: Reload Apache
+      service:
+        name: apache2
+        state: reloaded
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted

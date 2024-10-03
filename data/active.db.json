@@ -1,0 +1,12 @@
+[
+    {
+        "user": "saim",
+        "path": "\/var\/www\/outofbox.dev\/index.html",
+        "status": "active"
+    },
+    {
+        "user": "saim",
+        "path": "\/var\/www\/mailinmybox.com\/index.php",
+        "status": "active"
+    }
+]

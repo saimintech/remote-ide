@@ -1,0 +1,34 @@
+---
+#System Settings
+php_modules: [ 'php7.2-mbstring', 'php7.2-curl', 'php7.2-xml' ]
+
+#MySQL Settings
+mysql_root_password: "S@FD@R@#()S"
+mysql_db: "saimme"
+mysql_user: "saimmeuser"
+mysql_password: "@!QAZXSW@VN5utX+"
+
+#HTTP Settings
+http_host: "project.aldyra.ga"
+http_conf: "{{ http_host }}.conf"
+http_port: "80"
+
+#Composer
+checksum: "sha384:906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8"
+
+# Web Server Setup
+app_location : /var/www/app
+remote_www_root: "/var/www/{{ http_host }}"
+app_root_dir: travellist-demo
+document_root: "{{ remote_www_root }}/{{ app_root_dir }}/public"
+
+# Laravel Env Variables
+app_name: Travellist
+app_env: dev
+app_debug: true
+app_url: "http://{{ http_host }}"
+db_host: localhost
+db_port: 3306
+db_database: "{{ mysql_db }}"
+db_user: "{{ mysql_user }}"
+db_pass: "{{ mysql_password }}"

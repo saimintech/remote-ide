@@ -1,0 +1,14 @@
+---
+#System Settings
+#php_modules: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+
+#MySQL Settings
+mysql_root_password: "S@FD@R@#()S"
+mysql_db: "saimme"
+mysql_user: "saimmeuser"
+mysql_password: "@!QAZXSW@VN5utX+"
+
+#HTTP Settings
+http_host: "saim.me"
+http_conf: "saim.me.conf"
+http_port: "80"

@@ -1,0 +1,14 @@
+---
+#System Settings
+php_modules: [ 'php-curl', 'php-gd', 'php-bcmath', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+
+#HTTP Settings
+http_host: "client-portal.saim.me"
+http_conf: "{{ http_host }}.conf"
+http_port: "80"
+
+#MySQL Settings
+mysql_root_password: "S@FD@R@#()S"
+mysql_db: "cp_saimme"
+mysql_user: "cp_saimmeuser"
+mysql_password: "@!QAZXSW@VN5utX+"

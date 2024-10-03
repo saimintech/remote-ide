@@ -1,0 +1,3 @@
+
+zip_files = zip -r {{folder}}.zip {{folder}}
+find_files = find ./ -type f -name 'index.html' 
